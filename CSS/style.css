@@ -727,6 +727,11 @@ ol {
   animation: floatingBadge 4s ease-in-out infinite;
 }
 
+.technology-badge > i {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
 .technology-badge--code {
   top: 55px;
   left: 25px;
@@ -1031,7 +1036,7 @@ ol {
 }
 
 .project-card__image-wrapper {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
 
   overflow: hidden;
 }
@@ -1846,4 +1851,9 @@ html {
 .project-card__description,
 .contact-information > p {
   text-wrap: pretty;
+}
+/* Pair laptop and mobile icons for the Responsive Design skill */
+.skill-card__icon:has(.fa-laptop) {
+  gap: 0.15rem;
+  font-size: 1.15rem;
 }

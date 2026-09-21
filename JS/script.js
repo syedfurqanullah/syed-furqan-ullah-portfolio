@@ -3,7 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const siteHeader = document.querySelector(".site-header");
   const navigationToggle = document.getElementById("navigation-toggle");
   const primaryNavigation = document.getElementById("primary-navigation");
-  const navigationLinks = document.querySelectorAll('#primary-navigation a[href^="#"]');
+  const navigationLinks = document.querySelectorAll(
+    '#primary-navigation a[href^="#"]',
+  );
   const pageSections = document.querySelectorAll("main section[id]");
   const backToTopButton = document.getElementById("back-to-top");
   const contactForm = document.getElementById("contact-form");
@@ -14,14 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mobileNavigationQuery = window.matchMedia("(max-width: 768px)");
   const getNavigationFocusableElements = () =>
-    primaryNavigation?.querySelectorAll("a[href], button:not([disabled])") || [];
+    primaryNavigation?.querySelectorAll("a[href], button:not([disabled])") ||
+    [];
 
   const syncNavigationAccessibility = (isOpen = false) => {
     if (!primaryNavigation) return;
-    primaryNavigation.setAttribute(
-      "aria-hidden",
-      String(mobileNavigationQuery.matches && !isOpen),
-    );
+    const isMobile = mobileNavigationQuery.matches;
+    primaryNavigation.setAttribute("aria-hidden", String(isMobile && !isOpen));
+    primaryNavigation.inert = isMobile && !isOpen;
   };
 
   const closeMobileNavigation = ({ restoreFocus = false } = {}) => {
@@ -59,9 +61,17 @@ document.addEventListener("DOMContentLoaded", () => {
   navigationLinks.forEach((link) =>
     link.addEventListener("click", () => closeMobileNavigation()),
   );
+  document
+    .querySelectorAll('.site-logo[href^="#"]')
+    .forEach((link) =>
+      link.addEventListener("click", () => closeMobileNavigation()),
+    );
 
   document.addEventListener("click", (event) => {
-    if (primaryNavigation?.classList.contains("is-open") && !siteHeader?.contains(event.target)) {
+    if (
+      primaryNavigation?.classList.contains("is-open") &&
+      !siteHeader?.contains(event.target)
+    ) {
       closeMobileNavigation();
     }
   });
@@ -91,10 +101,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  window.addEventListener("resize", () => {
+  const handleNavigationViewportChange = () => {
     if (!mobileNavigationQuery.matches) closeMobileNavigation();
-    syncNavigationAccessibility(primaryNavigation?.classList.contains("is-open"));
-  }, { passive: true });
+    syncNavigationAccessibility(
+      primaryNavigation?.classList.contains("is-open"),
+    );
+  };
+  window.addEventListener("resize", handleNavigationViewportChange, {
+    passive: true,
+  });
+  mobileNavigationQuery.addEventListener?.(
+    "change",
+    handleNavigationViewportChange,
+  );
   const updateActiveNavigation = (sectionId) => {
     navigationLinks.forEach((link) => {
       const isActive = link.getAttribute("href") === `#${sectionId}`;
@@ -105,11 +124,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   if (pageSections.length && "IntersectionObserver" in window) {
-    const sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) updateActiveNavigation(entry.target.id);
-      });
-    }, { threshold: 0.15, rootMargin: "-20% 0px -60% 0px" });
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) updateActiveNavigation(entry.target.id);
+        });
+      },
+      { threshold: 0.15, rootMargin: "-20% 0px -60% 0px" },
+    );
     pageSections.forEach((section) => sectionObserver.observe(section));
   }
 
@@ -120,16 +142,21 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("scroll", updateHeaderOnScroll, { passive: true });
   updateHeaderOnScroll();
 
-  const revealElements = document.querySelectorAll(".section-heading, .information-card, .skill-card, .project-card, .journey-step, .contact-information, .contact-form-wrapper, .contact-visual");
+  const revealElements = document.querySelectorAll(
+    ".section-heading, .information-card, .skill-card, .project-card, .journey-step, .contact-information, .contact-form-wrapper, .contact-visual",
+  );
   if (revealElements.length && "IntersectionObserver" in window) {
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
+    const revealObserver = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
     revealElements.forEach((element) => revealObserver.observe(element));
   }
 
@@ -137,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nameInput = document.getElementById("contact-name");
     const emailInput = document.getElementById("contact-email");
     const messageInput = document.getElementById("contact-message");
-    const submitButton = contactForm.querySelector("button[type=\"submit\"]");
+    const submitButton = contactForm.querySelector('button[type="submit"]');
     const fields = [nameInput, emailInput, messageInput].filter(Boolean);
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -148,11 +175,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       input.addEventListener("blur", () => {
         input.dataset.touched = "true";
-        validateField(input);
+        if (input.value.trim()) validateField(input);
+        else setFieldState(input, "");
       });
 
       input.addEventListener("input", () => {
-        if (input.dataset.touched === "true") validateField(input);
+        if (input.dataset.touched === "true") {
+          if (input.value.trim()) validateField(input);
+          else setFieldState(input, "");
+        }
         if (formStatus) {
           formStatus.textContent = "";
           formStatus.className = "form-status";
@@ -162,13 +193,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     contactForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      fields.forEach((input) => { input.dataset.touched = "true"; });
+      fields.forEach((input) => {
+        input.dataset.touched = "true";
+      });
 
       const isValid = fields.every((input) => validateField(input));
       if (!isValid) {
-        const firstInvalidField = fields.find((input) => input.getAttribute("aria-invalid") === "true");
+        const firstInvalidField = fields.find(
+          (input) => input.getAttribute("aria-invalid") === "true",
+        );
         firstInvalidField?.focus();
-        showFormStatus("Please correct the highlighted fields and try again.", "error");
+        showFormStatus(
+          "Please correct the highlighted fields and try again.",
+          "error",
+        );
         return;
       }
 
@@ -212,7 +250,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const hasError = Boolean(errorMessage);
 
       field?.classList.toggle("has-error", hasError);
-      field?.classList.toggle("has-success", !hasError && input.value.trim().length > 0);
+      field?.classList.toggle(
+        "has-success",
+        !hasError && input.value.trim().length > 0,
+      );
       input.setAttribute("aria-invalid", String(hasError));
       if (errorElement) errorElement.textContent = errorMessage;
     }

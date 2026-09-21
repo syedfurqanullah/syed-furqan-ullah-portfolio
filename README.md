@@ -1,6 +1,3 @@
-
-# syed-furqan-ullah-portfolio
-=======
 # Syed Furqan Ullah — Portfolio
 
 A responsive frontend developer portfolio built with semantic HTML, modern CSS, and vanilla JavaScript.
@@ -72,7 +69,6 @@ Then open `http://localhost:8000`.
 
 Welcome to my portfolio, where I showcase my frontend development skills, projects, and learning journey.
 Explore my work to see how I create clean, responsive, and user-focused web experiences.
-
 
 ## Contact
 

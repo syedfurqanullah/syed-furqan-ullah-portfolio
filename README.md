@@ -4,7 +4,7 @@ A responsive frontend developer portfolio built with semantic HTML, modern CSS, 
 
 ## Live Demo
 
-[syedfurqanullah View](https://syed-furqan-ullah-portfolio.netlify.app/)
+[Syed-Furqan-Ullah View Portfolio](https://syed-furqan-ullah-portfolio.netlify.app/)
 
 ## 📸 Screenshots
 
